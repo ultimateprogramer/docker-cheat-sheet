@@ -24,7 +24,7 @@ NOTE: This used to be a gist that continually expanded.  It's now a GitHub proje
 
 Developers can get going quickly by starting with one of the 13,000+ apps available on Docker Hub. Docker manages and tracks changes and dependencies, making it easier for sysadmins to understand how the apps that developers build work. And with Docker Hub, developers can automate their build pipeline and share artifacts with collaborators through public or private repositories.
 
-Docker helps developers build and ship higher-quality applications, faster." -- [What is Docker](https://www.docker.com/whatisdocker/#copy1)
+Docker helps developers build and ship higher-quality applications, faster." -- [What is Docker](https://www.docker.com/what-docker#copy1)
 
 ## Prerequisites
 
@@ -54,7 +54,7 @@ If you are a complete Docker newbie, you should follow the [series of tutorials]
 
 ### Mac OS X
 
-Download and install [Docker Toolbox](https://www.docker.com/toolbox).  If that doesn't work, see the [installation instructions](https://docs.docker.com/installation/mac/).
+Download and install [Docker Toolbox](https://www.docker.com/products/docker-toolbox).  If that doesn't work, see the [installation instructions](https://docs.docker.com/installation/mac/).
 
 Docker used to use boot2docker, but you should be using docker machine now. The Docker website has instructions on [how to upgrade](https://docs.docker.com/installation/mac/#migrate-from-boot2docker).  If you have an existing docker instance, you can also install the [Docker Machine](https://docs.docker.com/machine/install-machine/) binaries directly.
 
@@ -181,7 +181,7 @@ A repository is a *hosted* collection of tagged images that together create the 
 
 A registry is a *host* -- a server that stores repositories and provides an HTTP API for [managing the uploading and downloading of repositories](https://docs.docker.com/userguide/dockerrepos/).
 
-Docker.com hosts its own [index](https://registry.hub.docker.com/) to a central registry which contains a large number of repositories.  Having said that, the central docker registry [does not do a good job of verifying images](https://titanous.com/posts/docker-insecurity) and should be avoided if you're worried about security.
+Docker.com hosts its own [index](https://hub.docker.com/) to a central registry which contains a large number of repositories.  Having said that, the central docker registry [does not do a good job of verifying images](https://titanous.com/posts/docker-insecurity) and should be avoided if you're worried about security.
 
 * [`docker login`](https://docs.docker.com/reference/commandline/login) to login to a registry.
 * [`docker search`](https://docs.docker.com/reference/commandline/search) searches registry for image.
@@ -201,15 +201,15 @@ In order to push to this repository tag image with `repositoryHostName:5000/imag
 
 ### Instructions
 
-* [.dockerignore](https://docs.docker.com/reference/builder/#the-dockerignore-file)
+* [.dockerignore](https://docs.docker.com/reference/builder/#dockerignore-file)
 * [FROM](https://docs.docker.com/reference/builder/#from) Sets the Base Image for subsequent instructions.
 * [MAINTAINER](https://docs.docker.com/reference/builder/#maintainer) Set the Author field of the generated images..
 * [RUN](https://docs.docker.com/reference/builder/#run) execute any commands in a new layer on top of the current image and commit the results.
 * [CMD](https://docs.docker.com/reference/builder/#cmd) provide defaults for an executing container.
 * [EXPOSE](https://docs.docker.com/reference/builder/#expose) informs Docker that the container listens on the specified network ports at runtime.  NOTE: does not actually make ports accessible.
 * [ENV](https://docs.docker.com/reference/builder/#env) sets environment variable.
-* [ADD](https://docs.docker.com/reference/builder/#add) copies new files, directories or remote file to container.  Invalidates caches.
-* [COPY](https://docs.docker.com/reference/builder/#copy) copies new files or directories.
+* [ADD](https://docs.docker.com/reference/builder/#add) copies new files, directories or remote file to container.  Invalidates caches. Avoid `ADD` and use `COPY` instead.
+* [COPY](https://docs.docker.com/reference/builder/#copy) copies new files or directories to container.
 * [ENTRYPOINT](https://docs.docker.com/reference/builder/#entrypoint) configures a container that will run as an executable.
 * [VOLUME](https://docs.docker.com/reference/builder/#volume) creates a mount point for externally mounted volumes or other containers.
 * [USER](https://docs.docker.com/reference/builder/#user) sets the user name for following RUN / CMD / ENTRYPOINT commands.
@@ -217,6 +217,7 @@ In order to push to this repository tag image with `repositoryHostName:5000/imag
 * [ARG](https://docs.docker.com/engine/reference/builder/#arg) defines a build-time variable.
 * [ONBUILD](https://docs.docker.com/reference/builder/#onbuild) adds a trigger instruction when the image is used as the base for another build.
 * [STOPSIGNAL](https://docs.docker.com/engine/reference/builder/#stopsignal) sets the system call signal that will be sent to the container to exit.
+* [LABEL](https://docs.docker.com/engine/userguide/labels-custom-metadata/) apply key/value metadata to your images, containers, or daemons.  
 
 ### Tutorial
 
@@ -228,6 +229,7 @@ In order to push to this repository tag image with `repositoryHostName:5000/imag
 * [Best practices for writing Dockerfiles](https://docs.docker.com/articles/dockerfile_best-practices/)
 * [Michael Crosby](http://crosbymichael.com/) has some more [Dockerfiles best practices](http://crosbymichael.com/dockerfile-best-practices.html) / [take 2](http://crosbymichael.com/dockerfile-best-practices-take-2.html).
 * [Building Good Docker Images](http://jonathan.bergknoff.com/journal/building-good-docker-images) / [Building Better Docker Images](http://jonathan.bergknoff.com/journal/building-better-docker-images)
+* [Managing Container Configuration with Metadata](https://speakerdeck.com/garethr/managing-container-configuration-with-metadata)
 
 ## Layers
 
@@ -272,13 +274,13 @@ Docker volumes are [free-floating filesystems](https://docs.docker.com/userguide
 
 ### Lifecycle
 
-* [`docker volumes create`](https://docs.docker.com/engine/reference/commandline/volume_create/)
-* [`docker volumes rm`](https://docs.docker.com/engine/reference/commandline/volume_rm/)
+* [`docker volume create`](https://docs.docker.com/engine/reference/commandline/volume_create/)
+* [`docker volume rm`](https://docs.docker.com/engine/reference/commandline/volume_rm/)
 
 ### Info
 
-* [`docker volumes ls`](https://docs.docker.com/engine/reference/commandline/volume_ls/)
-* [`docker volumes inspect`](https://docs.docker.com/engine/reference/commandline/volume_inspect/)
+* [`docker volume ls`](https://docs.docker.com/engine/reference/commandline/volume_ls/)
+* [`docker volume inspect`](https://docs.docker.com/engine/reference/commandline/volume_inspect/)
 
 Volumes are useful in situations where you can't use links (which are TCP/IP only).  For instance, if you need to have two docker instances communicate by leaving stuff on the filesystem.
 
@@ -344,8 +346,8 @@ This is where general Docker best practices and war stories go:
 * [Bridget Kromhout](https://twitter.com/bridgetkromhout) has a useful blog post on [running Docker in production](http://sysadvent.blogspot.co.uk/2014/12/day-1-docker-in-production-reality-not.html) at Dramafever.  
 * There's also a best practices [blog post](http://developers.lyst.com/devops/2014/12/08/docker/) from Lyst.
 * [A Docker Dev Environment in 24 Hours!](https://engineering.salesforceiq.com/2013/11/05/a-docker-dev-environment-in-24-hours-part-2-of-2.html)
-* [Building a Development Environment With Docker](http://tersesystems.com/2013/11/20/building-a-development-environment-with-docker/)
-* [Discourse in a Docker Container](http://samsaffron.com/archive/2013/11/07/discourse-in-a-docker-container)
+* [Building a Development Environment With Docker](https://tersesystems.com/2013/11/20/building-a-development-environment-with-docker/)
+* [Discourse in a Docker Container](https://samsaffron.com/archive/2013/11/07/discourse-in-a-docker-container)
 
 ## Security
 

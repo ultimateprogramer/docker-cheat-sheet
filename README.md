@@ -1,6 +1,8 @@
-﻿# Docker Cheat Sheet
+# Docker Cheat Sheet
 
-NOTE: This used to be a gist that continually expanded.  It's now a GitHub project because it's considerably easier for other people to edit, fix and expand on Docker using Github.  Just click  [README.md](https://github.com/wsargent/docker-cheat-sheet/blob/master/README.md), and then on the "writing pen" icon on the right to edit.
+**Want to improve this cheat sheet?  See the [Contributing](#contributing) section!**
+
+## Table of Contents
 
 * [Why](#why)
 * [Prerequisites](#prerequisites)
@@ -17,6 +19,7 @@ NOTE: This used to be a gist that continually expanded.  It's now a GitHub proje
 * [Best Practices](#best-practices)
 * [Security](#security)
 * [Tips](#tips)
+* [Contributing](#contributing)
 
 ## Why
 
@@ -56,7 +59,9 @@ If you are a complete Docker newbie, you should follow the [series of tutorials]
 
 Download and install [Docker Toolbox](https://www.docker.com/products/docker-toolbox).  If that doesn't work, see the [installation instructions](https://docs.docker.com/installation/mac/).
 
-Docker used to use boot2docker, but you should be using docker machine now. The Docker website has instructions on [how to upgrade](https://docs.docker.com/installation/mac/#migrate-from-boot2docker).  If you have an existing docker instance, you can also install the [Docker Machine](https://docs.docker.com/machine/install-machine/) binaries directly.
+> **NOTE** If you have an existing docker toolbox, you might think you can upgrade [Docker Machine](https://docs.docker.com/machine/install-machine/) binaries directly (either from URL or `docker-machine upgrade default`) and it will take care of itself.  This is not going to help -- `docker-machine` will be `1.10.3` while `docker` is still `1.8.3` or whatever your previous version is.
+>
+> You are much better off using Docker Toolbox DMG file to upgrade, which will take care of all the binaries at once.
 
 Once you've installed Docker Toolbox, install a VM with Docker Machine using the VirtualBox provider:
 
@@ -83,14 +88,18 @@ If you are a complete Docker newbie, you should probably follow the [series of t
 ### Lifecycle
 
 * [`docker create`](https://docs.docker.com/reference/commandline/create) creates a container but does not start it.
+* [`docker rename`](https://docs.docker.com/engine/reference/commandline/rename/) allows the container to be renamed.
 * [`docker run`](https://docs.docker.com/reference/commandline/run) creates and starts a container in one operation.
 * [`docker rm`](https://docs.docker.com/reference/commandline/rm) deletes a container.
+* [`docker update`](https://docs.docker.com/engine/reference/commandline/update/) updates a container's resource limits.
 
 If you want a transient container, `docker run --rm` will remove the container after it stops.
 
 If you want to map a directory on the host to a docker container, `docker run -v $HOSTDIR:$DOCKERDIR`.  Also see [Volumes](https://github.com/wsargent/docker-cheat-sheet/#volumes).
 
 If you want to remove also the volumes associated with the container, the deletion of the container must include the -v switch like in `docker rm -v`.
+
+There's also a [logging driver](https://docs.docker.com/engine/admin/logging/overview/) available for individual containers in docker 1.10.  To run docker with a custom log driver (i.e. to syslog), use `docker run --log-driver=syslog`
 
 ## Starting and Stopping
 
@@ -112,7 +121,7 @@ Restart policies on crashed docker instances are [covered here](http://container
 ### Info
 
 * [`docker ps`](https://docs.docker.com/reference/commandline/ps) shows running containers.
-* [`docker logs`](https://docs.docker.com/reference/commandline/logs) gets logs from container.
+* [`docker logs`](https://docs.docker.com/reference/commandline/logs) gets logs from container.  (You can use a custom log driver, but logs is only available for `json-file` and `journald` in 1.10)
 * [`docker inspect`](https://docs.docker.com/reference/commandline/inspect) looks at all the info on a container (including IP address).
 * [`docker events`](https://docs.docker.com/reference/commandline/events) gets events from container.
 * [`docker port`](https://docs.docker.com/reference/commandline/port) shows public facing port of container.
@@ -121,6 +130,8 @@ Restart policies on crashed docker instances are [covered here](http://container
 * [`docker diff`](https://docs.docker.com/reference/commandline/diff) shows changed files in the container's FS.
 
 `docker ps -a` shows running and stopped containers.
+
+`docker stats --all` shows a running list of containers.
 
 ### Import / Export
 
@@ -156,7 +167,7 @@ Images are just [templates for docker containers](https://docs.docker.com/engine
 
 While you can use the `docker rmi` command to remove specific images, there's a tool called [docker-gc](https://github.com/spotify/docker-gc) that will clean up images that are no longer used by any containers in a safe manner.
 
-## Networks 
+## Networks
 
 Docker has a [networks](https://docs.docker.com/engine/userguide/networking/dockernetworks/) feature.  Not much is known about it, so this is a good place to expand the cheat sheet.  There is a note saying that it's a good way to configure docker containers to talk to each other without using ports.  See [working with networks](https://docs.docker.com/engine/userguide/networking/work-with-networks/) for more details.
 
@@ -175,6 +186,19 @@ Docker has a [networks](https://docs.docker.com/engine/userguide/networking/dock
 * [`docker network connect`](https://docs.docker.com/engine/reference/commandline/network_connect/)
 * [`docker network disconnect`](https://docs.docker.com/engine/reference/commandline/network_disconnect/)
 
+You can specify a [specific IP address for a container](https://blog.jessfraz.com/post/ips-for-all-the-things/):
+
+```
+# create a new bridge network with your subnet and gateway for your ip block
+docker network create --subnet 203.0.113.0/24 --gateway 203.0.113.254 iptastic
+
+# run a nginx container with a specific ip in that block
+$ docker run --rm -it --net iptastic --ip 203.0.113.2 nginx
+
+# curl the ip from any other place (assuming this is a public ip block duh)
+$ curl 203.0.113.2
+```
+
 ## Registry & Repository
 
 A repository is a *hosted* collection of tagged images that together create the file system for a container.
@@ -190,14 +214,13 @@ Docker.com hosts its own [index](https://hub.docker.com/) to a central registry 
 
 ### Run local registry
 
-[Registry implementation](https://github.com/docker/docker-registry) has an official image for basic setup that can be launched with
-[`docker run -p 5000:5000 registry`](https://github.com/docker/docker-registry#quick-start)
-Note that this installation does not have any authorization controls. You may use option `-P -p 127.0.0.1:5000:5000` to limit connections to localhost only.
-In order to push to this repository tag image with `repositoryHostName:5000/imageName` then push this tag.
+You can run a local registry by using the [docker distribution](https://github.com/docker/distribution) project and looking at the [local deploy](https://github.com/docker/distribution/blob/master/docs/deploying.md) instructions.  
+
+Also see the [mailing list](https://groups.google.com/a/dockerproject.org/forum/#!forum/distribution).
 
 ## Dockerfile
 
-[The configuration file](https://docs.docker.com/reference/builder/). Sets up a Docker container when you run `docker build` on it.  Vastly preferable to `docker commit`.  If you use [jEdit](http://jedit.org), I've put up a syntax highlighting module for [Dockerfile](https://github.com/wsargent/jedit-docker-mode) you can use.  You may also like to try the [tools section](#tools).
+[The configuration file](https://docs.docker.com/reference/builder/). Sets up a Docker container when you run `docker build` on it.  Vastly preferable to `docker commit`.  If you use [jEdit](http://jedit.org), I've put up a syntax highlighting module for [Dockerfile](https://github.com/wsargent/jedit-docker-mode) you can use.
 
 ### Instructions
 
@@ -296,7 +319,7 @@ As of 1.3, you can [map MacOS host directories as docker volumes](https://docs.d
 docker run -v /Users/wsargent/myapp/src:/src
 ```
 
-You can also use remote NFS volumes if you're [feeling brave](http://www.tech-d.net/2014/03/29/docker-quicktip-4-remote-volumes/).
+You can also use remote NFS volumes if you're [feeling brave](https://web.archive.org/web/20150306065158/http://www.tech-d.net/2014/03/29/docker-quicktip-4-remote-volumes/).
 
 You may also consider running data-only containers as described [here](http://container42.com/2013/12/16/persistent-volumes-with-docker-container-as-volume-pattern/) to provide some data portability.
 
@@ -357,11 +380,11 @@ First things first: Docker runs as root.  If you are in the `docker` group, you 
 
 ### Security Tips
 
-For greatest security, you want to run Docker inside a virtual machine, or on a host.  This is straight from the Docker Security Team Lead -- [slides](http://www.slideshare.net/jpetazzo/linux-containers-lxc-docker-and-security) / [notes](http://www.projectatomic.io/blog/2014/08/is-it-safe-a-look-at-docker-and-security-from-linuxcon/).  Then, run with AppArmor / seccomp / SELinux / grsec etc to [limit the container permissions](http://linux-audit.com/docker-security-best-practices-for-your-vessel-and-containers/).
+For greatest security, you want to run Docker inside a virtual machine.  This is straight from the Docker Security Team Lead -- [slides](http://www.slideshare.net/jpetazzo/linux-containers-lxc-docker-and-security) / [notes](http://www.projectatomic.io/blog/2014/08/is-it-safe-a-look-at-docker-and-security-from-linuxcon/).  Then, run with AppArmor / seccomp / SELinux / grsec etc to [limit the container permissions](http://linux-audit.com/docker-security-best-practices-for-your-vessel-and-containers/).  See the [Docker 1.10 security features](https://blog.docker.com/2016/02/docker-engine-1-10-security/) for more details.
 
 Docker image ids are [sensitive information](https://medium.com/@quayio/your-docker-image-ids-are-secrets-and-its-time-you-treated-them-that-way-f55e9f14c1a4) and should not be exposed to the outside world.  Treat them like passwords.
 
-See the [Docker Security Cheat Sheet](https://github.com/konstruktoid/Docker/blob/master/Security/CheatSheet.md) by [Thomas Sjögren](https://github.com/konstruktoid): some good stuff about container hardening in there.
+See the [Docker Security Cheat Sheet](https://github.com/konstruktoid/Docker/blob/master/Security/CheatSheet.adoc) by [Thomas Sjögren](https://github.com/konstruktoid): some good stuff about container hardening in there.
 
 Check out the [docker bench security script](https://github.com/docker/docker-bench-security), download the [white papers](https://blog.docker.com/2015/05/understanding-docker-security-and-best-practices/) and subscribe to the [mailing lists](https://www.docker.com/docker-security) (unfortunately Docker does not have a unique mailing list, only dev / user).
 
@@ -406,6 +429,12 @@ RUN groupadd -r user && useradd -r -g user user
 USER user
 ```
 
+### User Namespaces
+
+There's also work on [user namespaces](https://s3hh.wordpress.com/2013/07/19/creating-and-using-containers-without-privilege/) -- it is in 1.10 but is not enabled by default.
+
+To enable user namespaces ("remap the userns") in Ubuntu 15.10, [follow the blog example](https://raesene.github.io/blog/2016/02/04/Docker-User-Namespaces/).
+
 ### Security Videos
 
 * [Using Docker Safely](https://youtu.be/04LOuMgNj9U)
@@ -415,7 +444,7 @@ USER user
 ### Security Roadmap
 
 The Docker roadmap talks about [seccomp support](https://github.com/docker/docker/blob/master/ROADMAP.md#11-security).
-There is an AppArmor policy generator called [bane](https://github.com/jfrazelle/bane), and they're working on [security profiles](https://github.com/docker/docker/issues/17142).  There's also work on [user namespaces](https://s3hh.wordpress.com/2013/07/19/creating-and-using-containers-without-privilege/) which [just made it out of experimental](https://github.com/docker/docker/commit/cc63db4fd19f99372a84cc97a87a023fa9193734#diff-991890e619874cd6bb0277584bb7f7a4R632).
+There is an AppArmor policy generator called [bane](https://github.com/jfrazelle/bane), and they're working on [security profiles](https://github.com/docker/docker/issues/17142).  
 
 ## Tips
 
@@ -443,13 +472,9 @@ docker commit -run='{"Cmd":["postgres", "-too -many -opts"]}' `dl` postgres
 docker inspect `dl` | grep IPAddress | cut -d '"' -f 4
 ```
 
-or
+or install [jq](https://stedolan.github.io/jq/):
 
 ```
-wget http://stedolan.github.io/jq/download/source/jq-1.3.tar.gz
-tar xzvf jq-1.3.tar.gz
-cd jq-1.3
-./configure && make && sudo make install
 docker inspect `dl` | jq -r '.[0].NetworkSettings.IPAddress'
 ```
 
@@ -565,3 +590,23 @@ For all containers listed by name:
 ```
 docker stats $(docker ps --format '{{.Names}}')
 ```
+
+## Contributing
+
+Here's how to contribute to this cheat sheet.
+
+### Open README.md
+
+Click [README.md](https://github.com/wsargent/docker-cheat-sheet/blob/master/README.md) <-- this link
+
+![Click This](images/click.png)
+
+### Edit Page
+
+![Edit This](images/edit.png)
+
+### Make Changes and Commit
+
+![Change This](images/change.png)
+
+![Commit](images/commit.png)

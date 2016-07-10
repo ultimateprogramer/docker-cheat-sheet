@@ -51,7 +51,7 @@ Quick and easy install script provided by Docker:
 curl -sSL https://get.docker.com/ | sh
 ```
 
-If you're not willing to run a random shell script, please see the [installation](https://docs.docker.com/installation/) instructions for your distribution.  
+If you're not willing to run a random shell script, please see the [installation](https://docs.docker.com/installation/) instructions for your distribution.
 
 If you are a complete Docker newbie, you should follow the [series of tutorials](https://docs.docker.com/linux/started/) now.
 
@@ -101,7 +101,7 @@ If you want to remove also the volumes associated with the container, the deleti
 
 There's also a [logging driver](https://docs.docker.com/engine/admin/logging/overview/) available for individual containers in docker 1.10.  To run docker with a custom log driver (i.e. to syslog), use `docker run --log-driver=syslog`
 
-## Starting and Stopping
+### Starting and Stopping
 
 * [`docker start`](https://docs.docker.com/reference/commandline/start) starts a container so it is running.
 * [`docker stop`](https://docs.docker.com/reference/commandline/stop) stops a running container.
@@ -167,6 +167,35 @@ Images are just [templates for docker containers](https://docs.docker.com/engine
 
 While you can use the `docker rmi` command to remove specific images, there's a tool called [docker-gc](https://github.com/spotify/docker-gc) that will clean up images that are no longer used by any containers in a safe manner.
 
+### Load/Save image
+
+Load an image from file:
+```
+docker load < my_image.tar.gz
+```
+
+Save an existing image:
+```
+docker save my_image:my_tag > my_image.tar.gz
+```
+
+### Import/Export container
+
+Import a container as an image from file:
+```
+cat my_container.tar.gz | docker import - my_image:my_tag
+```
+
+Export an existing container:
+```
+docker export my_container > my_container.tar.gz
+```
+
+### Difference between loading a saved image and importing an exported container as an image ?
+
+Loading an image using the `load` command creates a new image including its history.  
+Importing a container as an image using the `import` command creates an new image excluding the history which results in a smaller image size compared to loading an image.
+
 ## Networks
 
 Docker has a [networks](https://docs.docker.com/engine/userguide/networking/dockernetworks/) feature.  Not much is known about it, so this is a good place to expand the cheat sheet.  There is a note saying that it's a good way to configure docker containers to talk to each other without using ports.  See [working with networks](https://docs.docker.com/engine/userguide/networking/work-with-networks/) for more details.
@@ -208,19 +237,28 @@ A registry is a *host* -- a server that stores repositories and provides an HTTP
 Docker.com hosts its own [index](https://hub.docker.com/) to a central registry which contains a large number of repositories.  Having said that, the central docker registry [does not do a good job of verifying images](https://titanous.com/posts/docker-insecurity) and should be avoided if you're worried about security.
 
 * [`docker login`](https://docs.docker.com/reference/commandline/login) to login to a registry.
+* [`docker logout`](https://docs.docker.com/reference/commandline/logout) to logout from a registry.
 * [`docker search`](https://docs.docker.com/reference/commandline/search) searches registry for image.
 * [`docker pull`](https://docs.docker.com/reference/commandline/pull) pulls an image from registry to local machine.
 * [`docker push`](https://docs.docker.com/reference/commandline/push) pushes an image to the registry from local machine.
 
 ### Run local registry
 
-You can run a local registry by using the [docker distribution](https://github.com/docker/distribution) project and looking at the [local deploy](https://github.com/docker/distribution/blob/master/docs/deploying.md) instructions.  
+You can run a local registry by using the [docker distribution](https://github.com/docker/distribution) project and looking at the [local deploy](https://github.com/docker/distribution/blob/master/docs/deploying.md) instructions.
 
 Also see the [mailing list](https://groups.google.com/a/dockerproject.org/forum/#!forum/distribution).
 
 ## Dockerfile
 
-[The configuration file](https://docs.docker.com/reference/builder/). Sets up a Docker container when you run `docker build` on it.  Vastly preferable to `docker commit`.  If you use [jEdit](http://jedit.org), I've put up a syntax highlighting module for [Dockerfile](https://github.com/wsargent/jedit-docker-mode) you can use.
+[The configuration file](https://docs.docker.com/reference/builder/). Sets up a Docker container when you run `docker build` on it.  Vastly preferable to `docker commit`.  
+
+Here are some common text editors and their syntax highlighting modules you could use to create Dockerfiles:
+* If you use [jEdit](http://jedit.org), I've put up a syntax highlighting module for [Dockerfile](https://github.com/wsargent/jedit-docker-mode) you can use.
+* [Sublime Text 2](https://packagecontrol.io/packages/Dockerfile%20Syntax%20Highlighting)
+* [Atom](https://atom.io/packages/language-docker)
+* [Vim](https://github.com/ekalinin/Dockerfile.vim)
+* [Emacs](https://github.com/spotify/dockerfile-mode)
+* For a most comprehensive list of editors and IDEs, check [Docker meets the IDE] (https://domeide.github.io/)
 
 ### Instructions
 
@@ -240,7 +278,7 @@ Also see the [mailing list](https://groups.google.com/a/dockerproject.org/forum/
 * [ARG](https://docs.docker.com/engine/reference/builder/#arg) defines a build-time variable.
 * [ONBUILD](https://docs.docker.com/reference/builder/#onbuild) adds a trigger instruction when the image is used as the base for another build.
 * [STOPSIGNAL](https://docs.docker.com/engine/reference/builder/#stopsignal) sets the system call signal that will be sent to the container to exit.
-* [LABEL](https://docs.docker.com/engine/userguide/labels-custom-metadata/) apply key/value metadata to your images, containers, or daemons.  
+* [LABEL](https://docs.docker.com/engine/userguide/labels-custom-metadata/) apply key/value metadata to your images, containers, or daemons.
 
 ### Tutorial
 
@@ -293,7 +331,7 @@ If you want to link across docker hosts then you should look at [Swarm](https://
 
 ## Volumes
 
-Docker volumes are [free-floating filesystems](https://docs.docker.com/userguide/dockervolumes/).  They don't have to be connected to a particular container.  You should use volumes mounted from [data-only containers](https://medium.com/@ramangupta/why-docker-data-containers-are-good-589b3c6c749e) for portability.
+Docker volumes are [free-floating filesystems](https://docs.docker.com/userguide/dockervolumes/).  They don't have to be connected to a particular container.  You should use volumes mounted from [data-only containers](https://medium.com/@ramangupta/why-docker-data-containers-are-good-589b3c6c749e) for portability.  
 
 ### Lifecycle
 
@@ -313,13 +351,13 @@ Because volumes are isolated filesystems, they are often used to store state fro
 
 See [advanced volumes](http://crosbymichael.com/advanced-docker-volumes.html) for more details.  Container42 is [also helpful](http://container42.com/2014/11/03/docker-indepth-volumes/).
 
-As of 1.3, you can [map MacOS host directories as docker volumes](https://docs.docker.com/userguide/dockervolumes/#mount-a-host-directory-as-a-data-volume) through boot2docker:
+You can [map MacOS host directories as docker volumes](https://docs.docker.com/userguide/dockervolumes/#mount-a-host-directory-as-a-data-volume):
 
 ```
 docker run -v /Users/wsargent/myapp/src:/src
 ```
 
-You can also use remote NFS volumes if you're [feeling brave](https://web.archive.org/web/20150306065158/http://www.tech-d.net/2014/03/29/docker-quicktip-4-remote-volumes/).
+You can also use remote NFS volumes if you're [feeling brave](https://docs.docker.com/engine/tutorials/dockervolumes/#/mount-a-shared-storage-volume-as-a-data-volume).
 
 You may also consider running data-only containers as described [here](http://container42.com/2013/12/16/persistent-volumes-with-docker-container-as-volume-pattern/) to provide some data portability.
 
@@ -339,7 +377,11 @@ You can tell Docker that the container listens on the specified network ports at
 EXPOSE <CONTAINERPORT>
 ```
 
-But note that EXPOSE does not expose the port itself, only `-p` will do that.
+But note that EXPOSE does not expose the port itself, only `-p` will do that. To expose the container's port on your localhosts port:
+
+```
+iptables -t nat -A DOCKER -p tcp --dport <LOCALHOSTPORT> -j DNAT --to-destination <CONTAINERIP>:<PORT>
+```
 
 If you're running Docker in Virtualbox, you then need to forward the port there as well, using [forwarded_port](https://docs.vagrantup.com/v2/networking/forwarded_ports.html).  It can be useful to define something in Vagrantfile to expose a range of ports so that you can dynamically map them:
 
@@ -366,7 +408,7 @@ docker port CONTAINER $CONTAINERPORT
 This is where general Docker best practices and war stories go:
 
 * [The Rabbit Hole of Using Docker in Automated Tests](http://gregoryszorc.com/blog/2014/10/16/the-rabbit-hole-of-using-docker-in-automated-tests/)
-* [Bridget Kromhout](https://twitter.com/bridgetkromhout) has a useful blog post on [running Docker in production](http://sysadvent.blogspot.co.uk/2014/12/day-1-docker-in-production-reality-not.html) at Dramafever.  
+* [Bridget Kromhout](https://twitter.com/bridgetkromhout) has a useful blog post on [running Docker in production](http://sysadvent.blogspot.co.uk/2014/12/day-1-docker-in-production-reality-not.html) at Dramafever.
 * There's also a best practices [blog post](http://developers.lyst.com/devops/2014/12/08/docker/) from Lyst.
 * [A Docker Dev Environment in 24 Hours!](https://engineering.salesforceiq.com/2013/11/05/a-docker-dev-environment-in-24-hours-part-2-of-2.html)
 * [Building a Development Environment With Docker](https://tersesystems.com/2013/11/20/building-a-development-environment-with-docker/)
@@ -374,9 +416,14 @@ This is where general Docker best practices and war stories go:
 
 ## Security
 
-This is where security tips about Docker go.  The [security](https://docs.docker.com/engine/articles/security/) page goes into more detail.
+This is where security tips about Docker go.  The Docker [security](https://docs.docker.com/engine/articles/security/) page goes into more detail.
 
-First things first: Docker runs as root.  If you are in the `docker` group, you effectively [have root access](http://reventlov.com/advisories/using-the-docker-command-to-root-the-host).  If you expose the docker unix socket to a container, you are giving the container [root access to the host](https://www.lvh.io/posts/dont-expose-the-docker-socket-not-even-to-a-container.html).  Docker should not be your only defense.
+
+First things first: Docker runs as root.  If you are in the `docker` group, you effectively [have root access](http://reventlov.com/advisories/using-the-docker-command-to-root-the-host).  If you expose the docker unix socket to a container, you are giving the container [root access to the host](https://www.lvh.io/posts/dont-expose-the-docker-socket-not-even-to-a-container.html).  
+
+Docker should not be your only defense.  You should secure and harden it.
+
+For an understanding of what containers leave exposed, you should read is [Understanding and Hardening Linux Containers](https://www.nccgroup.trust/globalassets/our-research/us/whitepapers/2016/april/ncc_group_understanding_hardening_linux_containers-10pdf) by [Aaron Grattafiori](https://twitter.com/dyn___).  This is a complete and comprehensive guide to the issues involved with containers, with a plethora of links and footnotes leading on to yet more useful content.  The security tips following are useful if you've already hardened containers in the past, but are not a substitute for understanding.
 
 ### Security Tips
 
@@ -389,6 +436,18 @@ See the [Docker Security Cheat Sheet](https://github.com/konstruktoid/Docker/blo
 Check out the [docker bench security script](https://github.com/docker/docker-bench-security), download the [white papers](https://blog.docker.com/2015/05/understanding-docker-security-and-best-practices/) and subscribe to the [mailing lists](https://www.docker.com/docker-security) (unfortunately Docker does not have a unique mailing list, only dev / user).
 
 You should start off by using a kernel with unstable patches for grsecurity / pax compiled in, such as [Alpine Linux](https://en.wikipedia.org/wiki/Alpine_Linux).  If you are using grsecurity in production, you should spring for [commercial support](https://grsecurity.net/business_support.php) for the [stable patches](https://grsecurity.net/announce.php), same as you would do for RedHat.  It's $200 a month, which is nothing to your devops budget.
+
+Since docker 1.11 you can easily limit the number of active processes running inside a container to prevent fork bombs. This requires a linux kernel >= 4.3 with CGROUP_PIDS=y to be in the kernel configuration.
+
+```
+docker run --pids-limit=64
+```
+
+Also available since docker 1.11 is the ability to prevent processes to gain new privileges. This feature is in the linux kernel since version 3.5. You can read more about it in [this](http://www.projectatomic.io/blog/2016/03/no-new-privs-docker/) blog post.
+
+```
+docker run --security-opt=no-new-privileges
+```
 
 From the [Docker Security Cheat Sheet](http://container-solutions.com/content/uploads/2015/06/15.06.15_DockerCheatSheet_A2.pdf) (it's in PDF which makes it hard to use, so copying below) by [Container Solutions](http://container-solutions.com/is-docker-safe-for-production/):
 
@@ -440,11 +499,12 @@ To enable user namespaces ("remap the userns") in Ubuntu 15.10, [follow the blog
 * [Using Docker Safely](https://youtu.be/04LOuMgNj9U)
 * [Securing your applications using Docker](https://youtu.be/KmxOXmPhZbk)
 * [Container security: Do containers actually contain?](https://youtu.be/a9lE9Urr6AQ)
+* [Linux Containers: Future or Fantasy?](https://www.youtube.com/watch?v=iN6QbszB1R8)
 
 ### Security Roadmap
 
 The Docker roadmap talks about [seccomp support](https://github.com/docker/docker/blob/master/ROADMAP.md#11-security).
-There is an AppArmor policy generator called [bane](https://github.com/jfrazelle/bane), and they're working on [security profiles](https://github.com/docker/docker/issues/17142).  
+There is an AppArmor policy generator called [bane](https://github.com/jfrazelle/bane), and they're working on [security profiles](https://github.com/docker/docker/issues/17142).
 
 ## Tips
 
@@ -457,25 +517,25 @@ Sources:
 ```
 alias dl='docker ps -l -q'
 docker run ubuntu echo hello world
-docker commit `dl` helloworld
+docker commit $(dl) helloworld
 ```
 
 ### Commit with command (needs Dockerfile)
 
 ```
-docker commit -run='{"Cmd":["postgres", "-too -many -opts"]}' `dl` postgres
+docker commit -run='{"Cmd":["postgres", "-too -many -opts"]}' $(dl) postgres
 ```
 
 ### Get IP address
 
 ```
-docker inspect `dl` | grep IPAddress | cut -d '"' -f 4
+docker inspect $(dl) | grep IPAddress | cut -d '"' -f 4
 ```
 
 or install [jq](https://stedolan.github.io/jq/):
 
 ```
-docker inspect `dl` | jq -r '.[0].NetworkSettings.IPAddress'
+docker inspect $(dl) | jq -r '.[0].NetworkSettings.IPAddress'
 ```
 
 or using a [go template](https://docs.docker.com/reference/commandline/inspect)
@@ -493,7 +553,7 @@ docker inspect -f '{{range $p, $conf := .NetworkSettings.Ports}} {{$p}} -> {{(in
 ### Find containers by regular expression
 
 ```
-for i in $(docker ps -a | grep "REGEXP_PATTERN" | cut -f1 -d" "); do echo $i; done`
+for i in $(docker ps -a | grep "REGEXP_PATTERN" | cut -f1 -d" "); do echo $i; done
 ```
 
 ### Get Environment Settings
@@ -517,7 +577,7 @@ docker ps -a | grep 'weeks ago' | awk '{print $1}' | xargs docker rm
 ### Delete stopped containers
 
 ```
-docker rm -v `docker ps -a -q -f status=exited`
+docker rm -v $(docker ps -a -q -f status=exited)
 ```
 
 ### Delete dangling images
@@ -550,12 +610,12 @@ docker images -viz | dot -Tpng -o docker.png
 
 ### Slimming down Docker containers  [Intercity Blog](http://bit.ly/1Wwo61N)
 
-- Cleaning APT in a RUN layer  
-This should be done in the same layer as other apt commands.  
-Otherwise, the previous layers still persist the original information and your images will still be fat.  
+- Cleaning APT in a RUN layer
+This should be done in the same layer as other apt commands.
+Otherwise, the previous layers still persist the original information and your images will still be fat.
 ```
 RUN {apt commands} \
- && apt-get clean \  
+ && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ```
 - Flatten an image
@@ -589,6 +649,12 @@ For all containers listed by name:
 
 ```
 docker stats $(docker ps --format '{{.Names}}')
+```
+
+For all containers listed by image:
+
+```
+docker ps -a -f ancestor=ubuntu
 ```
 
 ## Contributing
